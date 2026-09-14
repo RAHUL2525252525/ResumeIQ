@@ -1,0 +1,52 @@
+# Local development stack. In production, point DB_HOST/DB_* at a managed
+# cloud PostgreSQL instance instead of the "db" service below - see README.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-resumeiq}
+      POSTGRES_USER: ${DB_USER:-resumeiq_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-resumeiq_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-resumeiq_user} -d ${DB_NAME:-resumeiq}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DJANGO_DEBUG_SERVER: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - media:/app/media
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    env_file: ./frontend/.env
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
+  media:

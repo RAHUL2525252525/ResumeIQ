@@ -1,0 +1,205 @@
+{
+  "info": {
+    "name": "ResumeIQ API",
+    "description": "AI-powered ATS resume analyzer - Django + DRF backend. Set the `base_url` and `access_token` collection variables (register/login first to get a token).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "resume_id", "value": "" },
+    { "key": "job_description_id", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/register/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"StrongPass123!\",\n  \"full_name\": \"Jane Doe\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/login/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"StrongPass123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Guest login (nickname only)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/guest/",
+            "body": { "mode": "raw", "raw": "{\n  \"nickname\": \"Speedy\"\n}" }
+          }
+        },
+        {
+          "name": "Google login",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/google/",
+            "body": { "mode": "raw", "raw": "{\n  \"id_token\": \"<google-id-token-from-frontend>\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/auth/token/refresh/",
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}" }
+          }
+        },
+        {
+          "name": "Me",
+          "request": { "method": "GET", "url": "{{base_url}}/auth/me/" }
+        }
+      ]
+    },
+    {
+      "name": "Resumes",
+      "item": [
+        {
+          "name": "Upload resume",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/resumes/",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] },
+                { "key": "title", "type": "text", "value": "My Resume" }
+              ]
+            }
+          }
+        },
+        { "name": "List resumes", "request": { "method": "GET", "url": "{{base_url}}/resumes/" } },
+        { "name": "Get resume", "request": { "method": "GET", "url": "{{base_url}}/resumes/{{resume_id}}/" } },
+        { "name": "Delete resume", "request": { "method": "DELETE", "url": "{{base_url}}/resumes/{{resume_id}}/" } }
+      ]
+    },
+    {
+      "name": "Job Descriptions",
+      "item": [
+        {
+          "name": "Create job description",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/job-descriptions/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Backend Engineer\",\n  \"company\": \"Acme Inc\",\n  \"raw_text\": \"We are looking for a Backend Engineer with Python, Django, PostgreSQL, Docker, and REST API experience...\"\n}"
+            }
+          }
+        },
+        { "name": "List job descriptions", "request": { "method": "GET", "url": "{{base_url}}/job-descriptions/" } }
+      ]
+    },
+    {
+      "name": "Analysis",
+      "item": [
+        {
+          "name": "Run analysis (ATS scan)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/analyze/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resume_id\": {{resume_id}},\n  \"job_description_id\": {{job_description_id}},\n  \"run_ai_analysis\": true\n}"
+            }
+          }
+        },
+        { "name": "List analysis history", "request": { "method": "GET", "url": "{{base_url}}/analyses/" } },
+        { "name": "Get single analysis", "request": { "method": "GET", "url": "{{base_url}}/analyses/1/" } },
+        { "name": "Compare analyses", "request": { "method": "GET", "url": "{{base_url}}/analyses/compare/?ids=1,2" } }
+      ]
+    },
+    {
+      "name": "AI Tools (Gemini)",
+      "item": [
+        {
+          "name": "Improve bullet point",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/ai/improve-bullet/",
+            "body": { "mode": "raw", "raw": "{\n  \"bullet\": \"Responsible for backend development\",\n  \"role_context\": \"Backend Engineer\"\n}" }
+          }
+        },
+        {
+          "name": "Generate professional summary",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/ai/professional-summary/",
+            "body": { "mode": "raw", "raw": "{\n  \"resume_id\": {{resume_id}},\n  \"target_role\": \"Backend Engineer\"\n}" }
+          }
+        },
+        {
+          "name": "Generate interview questions",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/ai/interview-questions/",
+            "body": { "mode": "raw", "raw": "{\n  \"resume_id\": {{resume_id}},\n  \"job_description_id\": {{job_description_id}}\n}" }
+          }
+        },
+        {
+          "name": "Generate cover letter",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/ai/cover-letter/",
+            "body": { "mode": "raw", "raw": "{\n  \"resume_id\": {{resume_id}},\n  \"job_description_id\": {{job_description_id}},\n  \"company\": \"Acme Inc\",\n  \"tone\": \"professional\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resume Builder",
+      "item": [
+        { "name": "List templates", "request": { "method": "GET", "url": "{{base_url}}/templates/" } },
+        {
+          "name": "Create builder resume",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/builder-resumes/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"classic-ats\",\n  \"title\": \"My Resume\",\n  \"data\": {\n    \"contact\": {\"name\": \"Jane Doe\", \"email\": \"jane@example.com\"},\n    \"summary\": \"Backend engineer...\",\n    \"experience\": [],\n    \"education\": [],\n    \"skills\": [\"Python\", \"Django\"]\n  }\n}"
+            }
+          }
+        },
+        { "name": "List builder resumes", "request": { "method": "GET", "url": "{{base_url}}/builder-resumes/" } }
+      ]
+    }
+  ]
+}
